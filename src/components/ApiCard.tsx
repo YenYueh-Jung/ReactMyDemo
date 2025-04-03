@@ -76,7 +76,7 @@ export default function ApiCard({ api, setApis }: ApiCardProps) {
         <DialogTitle>確認刪除</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            您確定要刪除 "{api.name}" 嗎？
+          您確定要刪除 {api.name} 嗎？
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -20,7 +20,7 @@ export default function RequestPage() {
     price: 0,
     imagUrl: '',
   });
-  const [file, setFile] = useState<File | null>(null);
+  //const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
   
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function RequestPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      setFile(selectedFile);
+      //setFile(selectedFile);
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
@@ -58,7 +58,7 @@ export default function RequestPage() {
 
     // 重置表單
     setApi({ id: 0, name: '', description: '', price: 0, imagUrl: '' });
-    setFile(null);
+    //setFile(null);
     setPreview('');
 
     console.log('Added API:', newApi);

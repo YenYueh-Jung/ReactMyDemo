@@ -71,7 +71,12 @@ export default function InvoiceRecognitionPage({ api }: InvoiceRecognitionPagePr
         setTimeout(() => reject(new Error('辨識超時')), 30000)
       );
       const recognitionPromise = worker.recognize(file);
-      const result = await Promise.race<RecognizeResult>([recognitionPromise, timeoutPromise as any]);
+      //const result = await Promise.race<RecognizeResult>([recognitionPromise, timeoutPromise as any]);
+      
+      
+    const result = await Promise.race<RecognizeResult>([recognitionPromise, timeoutPromise]);
+
+
       const text = result.data.text;
 
       const invoiceNumberMatch = text.match(/[A-Z]{2}-\d{8}/);
