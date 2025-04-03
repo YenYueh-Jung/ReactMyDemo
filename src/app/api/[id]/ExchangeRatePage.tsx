@@ -6,7 +6,6 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
   Paper,
 } from '@mui/material';
 
@@ -48,7 +47,7 @@ export default function ExchangeRatePage({ api }: ExchangeRatePageProps) {
         padding: '2rem',
         maxWidth: '600px',
         margin: '0 auto',
-        bgcolor: '#e0e0e0', 
+        bgcolor: '#e0e0e0',
         minHeight: '100vh',
       }}
     >
@@ -64,72 +63,73 @@ export default function ExchangeRatePage({ api }: ExchangeRatePageProps) {
         elevation={3}
         sx={{
           padding: '2rem',
-          bgcolor: '#f5f5f5', 
+          bgcolor: '#f5f5f5',
           borderRadius: '8px',
         }}
       >
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: '16px',
+            }}
+          >
             <TextField
               label="起始金額"
               name="fromAmount"
               value={formData.fromAmount}
               onChange={handleInputChange}
               type="number"
-              fullWidth
               variant="outlined"
-              sx={{ bgcolor: 'white' }}
+              sx={{ bgcolor: 'white', flex: 1 }}
             />
-          </Grid>
-          <Grid item xs={12} sm={6}>
             <TextField
               label="起始貨幣"
               name="fromCurrency"
               value={formData.fromCurrency}
               onChange={handleInputChange}
-              fullWidth
               variant="outlined"
-              sx={{ bgcolor: 'white' }}
+              sx={{ bgcolor: 'white', flex: 1 }}
             />
-          </Grid>
-          <Grid item xs={12} sm={6}>
+          </Box>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: '16px',
+            }}
+          >
             <TextField
               label="目標貨幣"
               name="toCurrency"
               value={formData.toCurrency}
               onChange={handleInputChange}
-              fullWidth
               variant="outlined"
-              sx={{ bgcolor: 'white' }}
+              sx={{ bgcolor: 'white', flex: 1 }}
             />
-          </Grid>
-          <Grid item xs={12} sm={6}>
             <TextField
               label="目標金額"
               name="toAmount"
               value={formData.toAmount}
               InputProps={{ readOnly: true }}
-              fullWidth
               variant="outlined"
-              sx={{ bgcolor: '#e0e0e0' }} 
+              sx={{ bgcolor: '#e0e0e0', flex: 1 }}
             />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              onClick={handleConvert}
-              fullWidth
-              sx={{
-                mt: 2,
-                bgcolor: '#616161', 
-                color: 'white',
-                '&:hover': { bgcolor: '#424242' },
-              }}
-            >
-              轉換匯率
-            </Button>
-          </Grid>
-        </Grid>
+          </Box>
+          <Button
+            variant="contained"
+            onClick={handleConvert}
+            sx={{
+              mt: 2,
+              bgcolor: '#616161',
+              color: 'white',
+              '&:hover': { bgcolor: '#424242' },
+            }}
+          >
+            轉換匯率
+          </Button>
+        </Box>
       </Paper>
     </Box>
   );
