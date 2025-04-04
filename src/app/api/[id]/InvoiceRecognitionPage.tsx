@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { APIs } from '@/types';
-import { createWorker, RecognizeResult } from 'tesseract.js'; 
+import { createWorker } from 'tesseract.js'; 
 import {
   Box,
   Typography,
@@ -19,25 +19,11 @@ interface InvoiceRecognitionPageProps {
   api: APIs;
 }
 
-interface InvoiceData {
-  invoiceNumber: string;
-  date: string;
-  amount: string;
-  taxId: string;
-}
-
 export default function InvoiceRecognitionPage({ api }: InvoiceRecognitionPageProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
-  const [invoiceData, setInvoiceData] = useState<InvoiceData>({
-    invoiceNumber: '',
-    date: '',
-    amount: '',
-    taxId: '',
-  });
   const [textContent, setTextContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isInvoice, setIsInvoice] = useState<boolean | null>(null);
 
   // 處理圖片上傳
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,14 +38,12 @@ export default function InvoiceRecognitionPage({ api }: InvoiceRecognitionPagePr
         const reader = new FileReader();
         reader.onloadend = () => setPreview(reader.result as string);
         reader.readAsDataURL(selectedFile);
-        setInvoiceData({ invoiceNumber: '', date: '', amount: '', taxId: '' });
         setTextContent('');
-        setIsInvoice(null);
       }
     }
   };
 
-  // 辨識發票
+  // 辨識圖片文字
   const recognizeInvoice = async () => {
     if (!file) return;
     setIsLoading(true);
@@ -68,38 +52,20 @@ export default function InvoiceRecognitionPage({ api }: InvoiceRecognitionPagePr
 
     try {
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('辨識超時')), 30000)
+        setTimeout(() => reject(new Error('辨識超時')), 90000) // 90秒超時
       );
       const recognitionPromise = worker.recognize(file);
-      //const result = await Promise.race<RecognizeResult>([recognitionPromise, timeoutPromise as any]);
-      
-      
-    const result = await Promise.race<RecognizeResult>([recognitionPromise, timeoutPromise]);
-
+      const result = await Promise.race([recognitionPromise, timeoutPromise]);
 
       const text = result.data.text;
-
-      const invoiceNumberMatch = text.match(/[A-Z]{2}-\d{8}/);
-      const dateMatch = text.match(/\d{4}[/-]\d{2}[/-]\d{2}|\d{2}\/\d{2}\/\d{2}/);
-      const amountMatch = text.match(/(?:總計|金額)[:：]?\s*(\d{1,3}(?:,\d{3})*|\d+)/);
-      const taxIdMatch = text.match(/(?:統編|統一編號)[:：]?\s*(\d{8})/);
-
-      if (invoiceNumberMatch || taxIdMatch) {
-        setIsInvoice(true);
-        setInvoiceData({
-          invoiceNumber: invoiceNumberMatch ? invoiceNumberMatch[0] : '未找到',
-          date: dateMatch ? dateMatch[0] : '未找到',
-          amount: amountMatch ? amountMatch[1] : '未找到',
-          taxId: taxIdMatch ? taxIdMatch[1] : '未找到',
-        });
-      } else {
-        setIsInvoice(false);
-        setTextContent(text.trim() || '無可辨識內容');
-      }
+      setTextContent(text.trim() || '無可辨識內容');
     } catch (error) {
       console.error('辨識錯誤:', error);
-      setIsInvoice(false);
-      setTextContent('辨識失敗，請檢查圖片是否清晰或重試');
+      if (error instanceof Error && error.message === '辨識超時') {
+        setTextContent('辨識超時，請稍後重試');
+      } else {
+        setTextContent('辨識失敗，請檢查圖片是否清晰或重試');
+      }
     } finally {
       await worker.terminate();
       setIsLoading(false);
@@ -165,58 +131,19 @@ export default function InvoiceRecognitionPage({ api }: InvoiceRecognitionPagePr
               </Box>
 
               <Box sx={{ flex: { md: 1 }, width: '100%' }}>
-                {isInvoice === true && (
-                  <Card sx={{ bgcolor: '#fff', borderRadius: '8px', p: 2 }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#424242' }}>發票資訊</Typography>
-                    <TextField
-                      label="發票號碼"
-                      value={invoiceData.invoiceNumber}
-                      fullWidth
-                      variant="outlined"
-                      InputProps={{ readOnly: true }}
-                      sx={{ mb: 2, bgcolor: '#e0e0e0' }}
-                    />
-                    <TextField
-                      label="日期"
-                      value={invoiceData.date}
-                      fullWidth
-                      variant="outlined"
-                      InputProps={{ readOnly: true }}
-                      sx={{ mb: 2, bgcolor: '#e0e0e0' }}
-                    />
-                    <TextField
-                      label="金額"
-                      value={invoiceData.amount}
-                      fullWidth
-                      variant="outlined"
-                      InputProps={{ readOnly: true }}
-                      sx={{ mb: 2, bgcolor: '#e0e0e0' }}
-                    />
-                    <TextField
-                      label="統編"
-                      value={invoiceData.taxId}
-                      fullWidth
-                      variant="outlined"
-                      InputProps={{ readOnly: true }}
-                      sx={{ bgcolor: '#e0e0e0' }}
-                    />
-                  </Card>
-                )}
-                {isInvoice === false && (
-                  <Card sx={{ bgcolor: '#fff', borderRadius: '8px', p: 2 }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#424242' }}>文字內容</Typography>
-                    <TextField
-                      label="辨識結果"
-                      value={textContent}
-                      multiline
-                      rows={6}
-                      fullWidth
-                      variant="outlined"
-                      InputProps={{ readOnly: true }}
-                      sx={{ bgcolor: '#e0e0e0' }}
-                    />
-                  </Card>
-                )}
+                <Card sx={{ bgcolor: '#fff', borderRadius: '8px', p: 2 }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: '#424242' }}>文字內容</Typography>
+                  <TextField
+                    label="辨識結果"
+                    value={textContent}
+                    multiline
+                    rows={6}
+                    fullWidth
+                    variant="outlined"
+                    InputProps={{ readOnly: true }}
+                    sx={{ bgcolor: '#e0e0e0' }}
+                  />
+                </Card>
               </Box>
             </Box>
           )}
